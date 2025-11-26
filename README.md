@@ -1,115 +1,115 @@
 # Email Verification Tool
 
-Uma ferramenta moderna e segura para verificação de emails desenvolvida pela Townsend Solutions.
+A modern and secure email verification tool developed by Townsend Solutions.
 
 ![Email Verification Tool](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)
 ![React](https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
-## 🚀 Recursos
+## 🚀 Features
 
-### Verificação Individual
-- ✅ Verificação em tempo real de endereços de email
-- 🔍 Validação de formato, DNS e SMTP
-- 🚨 Detecção de emails descartáveis (disposable)
-- 📊 Relatório detalhado com status e informações técnicas
-- ⚡ Interface responsiva e intuitiva
+### Single Verification
+- ✅ Real-time email address verification
+- 🔍 Format, DNS, and SMTP validation
+- 🚨 Disposable email detection
+- 📊 Detailed report with status and technical information
+- ⚡ Responsive and intuitive interface
 
-### Verificação em Lote (Bulk Check)
-- 📁 Suporte para arquivos CSV e Excel (.xlsx)
-- 🎯 Processamento em lotes de até 10.000 emails
-- 📈 Barra de progresso em tempo real
-- 🔄 Processamento por lotes (50 emails por vez)
-- 📊 Dashboard com estatísticas detalhadas
-- 🎨 Filtros interativos por status (válido, inválido, arriscado)
-- 💾 Exportação de resultados em CSV
-- 🖱️ Drag & Drop para upload de arquivos
-- ⬆️ Botão "Back to top" para navegação em listas longas
+### Bulk Verification
+- 📁 Support for CSV and Excel files (.xlsx)
+- 🎯 Process up to 10,000 emails
+- 📈 Real-time progress bar
+- 🔄 Batch processing (50 emails at a time)
+- 📊 Dashboard with detailed statistics
+- 🎨 Interactive filters by status (valid, invalid, risky)
+- 💾 Export results to CSV
+- 🖱️ Drag & Drop file upload
+- ⬆️ "Back to top" button for long list navigation
 
-### Segurança e Privacidade
-- 🔒 **Nenhum dado é armazenado** - 100% GDPR compliant
-- 🗑️ Todos os dados são processados em memória e descartados após a verificação
-- 🛡️ Badge de privacidade visível na interface
-- ✨ Zero retenção de dados pessoais
+### Security and Privacy
+- 🔒 **No data stored** - 100% GDPR compliant
+- 🗑️ All data processed in memory and discarded after verification
+- 🛡️ Visible privacy badge in the interface
+- ✨ Zero personal data retention
 
-## 🛠️ Tecnologias
+## 🛠️ Technologies
 
 - **Framework**: Next.js 16 (App Router)
 - **UI**: React 19.2, Tailwind CSS v4
-- **Componentes**: shadcn/ui
-- **Validação**: DNS lookup, SMTP verification
-- **Processamento**: xlsx para arquivos Excel
-- **TypeScript**: Tipagem completa end-to-end
+- **Components**: shadcn/ui
+- **Validation**: DNS lookup, SMTP verification
+- **Processing**: xlsx for Excel files
+- **TypeScript**: Complete end-to-end typing
 
-## 📋 Pré-requisitos
+## 📋 Prerequisites
 
 - Node.js 18+ 
-- npm, yarn ou pnpm
+- npm, yarn, or pnpm
 
-## 🔧 Instalação
+## 🔧 Installation
 
-1. Clone o repositório:
+1. Clone the repository:
 \`\`\`bash
-git clone https://github.com/seu-usuario/email-verification-tool.git
+git clone https://github.com/your-username/email-verification-tool.git
 cd email-verification-tool
 \`\`\`
 
-2. Instale as dependências:
+2. Install dependencies:
 \`\`\`bash
 npm install
-# ou
+# or
 yarn install
-# ou
+# or
 pnpm install
 \`\`\`
 
-3. Execute o servidor de desenvolvimento:
+3. Run the development server:
 \`\`\`bash
 npm run dev
-# ou
+# or
 yarn dev
-# ou
+# or
 pnpm dev
 \`\`\`
 
-4. Abra [http://localhost:3000](http://localhost:3000) no navegador
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## 📖 Como Usar
+## 📖 How to Use
 
-### Verificação Individual
+### Single Verification
 
-1. Acesse a aba **"Single Check"**
-2. Digite o endereço de email que deseja verificar
-3. Clique em **"Verify Email"**
-4. Visualize o resultado com detalhes técnicos:
-   - ✅ Valid: Email válido e funcional
-   - ❌ Invalid: Email inválido ou inexistente
-   - ⚠️ Risky: Email arriscado (descartável ou suspeito)
-   - 🔴 Error: Erro durante verificação
+1. Go to the **"Single Check"** tab
+2. Enter the email address you want to verify
+3. Click **"Verify Email"**
+4. View the result with technical details:
+   - ✅ Valid: Valid and functional email
+   - ❌ Invalid: Invalid or non-existent email
+   - ⚠️ Risky: Risky email (disposable or suspicious)
+   - 🔴 Error: Error during verification
 
-### Verificação em Lote
+### Bulk Verification
 
-1. Acesse a aba **"Bulk Check"**
-2. Prepare seu arquivo:
-   - Formato CSV com coluna "Email"
-   - Formato Excel (.xlsx) com coluna "Email"
-   - Máximo de 10.000 emails
-3. Faça upload:
-   - Arraste e solte o arquivo na área indicada
-   - Ou clique para selecionar o arquivo
-4. Aguarde o processamento (progresso em tempo real)
-5. Visualize os resultados:
-   - Dashboard com estatísticas
-   - Clique nos cards para filtrar por status
-   - Tabela completa com todos os resultados
-6. Exporte os resultados clicando em **"Download CSV Report"**
+1. Go to the **"Bulk Check"** tab
+2. Prepare your file:
+   - CSV format with "Email" column
+   - Excel format (.xlsx) with "Email" column
+   - Maximum of 10,000 emails
+3. Upload:
+   - Drag and drop the file into the designated area
+   - Or click to select the file
+4. Wait for processing (real-time progress)
+5. View results:
+   - Dashboard with statistics
+   - Click on cards to filter by status
+   - Complete table with all results
+6. Export results by clicking **"Download CSV Report"**
 
 ## 🔌 API
 
 ### POST `/api/verify-email`
 
-Verifica um único endereço de email.
+Verifies a single email address.
 
 **Request Body:**
 \`\`\`json
@@ -138,7 +138,7 @@ Verifica um único endereço de email.
 
 ### POST `/api/verify-bulk`
 
-Verifica múltiplos endereços de email.
+Verifies multiple email addresses.
 
 **Request Body:**
 \`\`\`json
@@ -163,66 +163,66 @@ Verifica múltiplos endereços de email.
 }
 \`\`\`
 
-## 🔐 Privacidade e Compliance
+## 🔐 Privacy and Compliance
 
-Esta ferramenta foi desenvolvida com privacidade em mente:
+This tool was developed with privacy in mind:
 
-- ✅ **Zero armazenamento**: Nenhum email ou resultado é salvo em banco de dados
-- ✅ **Processamento em memória**: Todos os dados são processados temporariamente
-- ✅ **Descarte automático**: Dados são eliminados imediatamente após a verificação
-- ✅ **GDPR compliant**: Totalmente compatível com regulamentações de privacidade
-- ✅ **Sem cookies de rastreamento**: Apenas processamento de verificação
+- ✅ **Zero storage**: No email or result is saved in a database
+- ✅ **In-memory processing**: All data is processed temporarily
+- ✅ **Automatic disposal**: Data is eliminated immediately after verification
+- ✅ **GDPR compliant**: Fully compatible with privacy regulations
+- ✅ **No tracking cookies**: Only verification processing
 
 ## 🎨 Design
 
-- **Cores**: Sistema de 3-5 cores com tom principal azul (#1E40AF)
-- **Tipografia**: Fonte Geist Sans para interface moderna
-- **Layout**: Mobile-first com design responsivo
-- **Acessibilidade**: Suporte completo para leitores de tela (aria-live regions)
+- **Colors**: 3-5 color system with primary blue tone (#1E40AF)
+- **Typography**: Geist Sans font for modern interface
+- **Layout**: Mobile-first with responsive design
+- **Accessibility**: Full screen reader support (aria-live regions)
 
-## 📁 Estrutura do Projeto
+## 📁 Project Structure
 
 \`\`\`
 email-verification-tool/
 ├── app/
 │   ├── api/
-│   │   ├── verify-email/route.ts    # API de verificação individual
-│   │   └── verify-bulk/route.ts     # API de verificação em lote
-│   ├── layout.tsx                    # Layout principal
-│   ├── page.tsx                      # Página principal
-│   └── globals.css                   # Estilos globais
+│   │   ├── verify-email/route.ts    # Single verification API
+│   │   └── verify-bulk/route.ts     # Bulk verification API
+│   ├── layout.tsx                    # Main layout
+│   ├── page.tsx                      # Main page
+│   └── globals.css                   # Global styles
 ├── components/
-│   ├── ui/                           # Componentes shadcn/ui
-│   └── privacy-badge.tsx             # Badge de privacidade
+│   ├── ui/                           # shadcn/ui components
+│   └── privacy-badge.tsx             # Privacy badge
 ├── lib/
-│   ├── email-validator.ts            # Lógica de validação
-│   └── utils.ts                      # Utilitários
-└── public/                           # Arquivos estáticos
+│   ├── email-validator.ts            # Validation logic
+│   └── utils.ts                      # Utilities
+└── public/                           # Static files
 \`\`\`
 
-## 🤝 Contribuindo
+## 🤝 Contributing
 
-Contribuições são bem-vindas! Por favor:
+Contributions are welcome! Please:
 
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+1. Fork the project
+2. Create a branch for your feature (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## 📄 Licença
+## 📄 License
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
 
-## 👥 Créditos
+## 👥 Credits
 
-- **Desenvolvido por**: Townsend Solutions
-- **Design por**: Vergara Design
-- **Tecnologia**: Vercel v0
+- **Developed by**: Townsend Solutions
+- **Design by**: Vergara Design
+- **Technology**: Vercel v0
 
-## 📞 Suporte
+## 📞 Support
 
-Para suporte ou questões, entre em contato através de:
+For support or questions, contact us through:
 - Website: [Townsend Solutions](https://vergaratec.com/townsend)
 - Email: support@townsend.com
 
