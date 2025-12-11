@@ -31,6 +31,7 @@ interface BulkResult {
   email: string
   status: VerificationStatus
   details: string
+  originalData?: Record<string, any> // Store all original columns from the uploaded file
 }
 
 const verifySingleEmail = async (email: string): Promise<VerificationResult> => {
@@ -92,25 +93,29 @@ const extractEmailsFromText = (text: string): string[] => {
 }
 
 // Parse CSV or Excel file
-const parseEmailsFromFile = async (file: File): Promise<string[]> => {
+const parseEmailsFromFile = async (file: File): Promise<{ emails: string[]; rows: any[] }> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
 
     reader.onload = (e) => {
       try {
         const data = e.target?.result
-        let emails: string[] = []
+        const emails: string[] = []
+        let rows: any[] = []
 
         // Check if it's an Excel file
         if (file.name.endsWith(".xlsx") || file.name.endsWith(".xls")) {
           const workbook = XLSX.read(data, { type: "binary" })
           const sheetName = workbook.SheetNames[0]
           const worksheet = workbook.Sheets[sheetName]
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][]
 
-          // Extract all emails from all cells
-          jsonData.forEach((row) => {
-            row.forEach((cell) => {
+          // Parse as JSON with headers
+          const jsonData = XLSX.utils.sheet_to_json(worksheet)
+          rows = jsonData as any[]
+
+          // Extract emails from each row
+          rows.forEach((row) => {
+            Object.values(row).forEach((cell) => {
               if (cell && typeof cell === "string") {
                 const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g
                 const matches = cell.match(emailRegex)
@@ -123,12 +128,39 @@ const parseEmailsFromFile = async (file: File): Promise<string[]> => {
         } else {
           // Handle CSV files
           const content = data as string
-          emails = extractEmailsFromText(content)
+          const lines = content.split("\n").filter((line) => line.trim())
+
+          if (lines.length > 0) {
+            // Parse CSV with headers
+            const headers = lines[0].split(",").map((h) => h.trim())
+
+            for (let i = 1; i < lines.length; i++) {
+              const values = lines[i].split(",").map((v) => v.trim())
+              const row: any = {}
+
+              headers.forEach((header, index) => {
+                row[header] = values[index] || ""
+              })
+
+              rows.push(row)
+
+              // Extract emails from all values
+              values.forEach((value) => {
+                if (value) {
+                  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g
+                  const matches = value.match(emailRegex)
+                  if (matches) {
+                    emails.push(...matches)
+                  }
+                }
+              })
+            }
+          }
         }
 
-        // Remove duplicates
+        // Remove duplicate emails
         const uniqueEmails = [...new Set(emails)]
-        resolve(uniqueEmails)
+        resolve({ emails: uniqueEmails, rows })
       } catch (error) {
         reject(new Error("Failed to parse file"))
       }
@@ -143,69 +175,6 @@ const parseEmailsFromFile = async (file: File): Promise<string[]> => {
       reader.readAsText(file)
     }
   })
-}
-
-const verifyBulkEmails = async (
-  emails: string[],
-  onProgress: (current: number, total: number) => void,
-): Promise<BulkResult[]> => {
-  const BATCH_SIZE = 50 // Process 50 emails at a time
-  const allResults: BulkResult[] = []
-  let processed = 0
-
-  try {
-    // Split emails into batches
-    for (let i = 0; i < emails.length; i += BATCH_SIZE) {
-      const batch = emails.slice(i, i + BATCH_SIZE)
-
-      const response = await fetch("/api/verify-bulk", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ emails: batch }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Bulk verification failed")
-      }
-
-      const data = await response.json()
-
-      // Map results to include details
-      const batchResults = data.results.map((result: any) => {
-        let details = ""
-        if (result.status === "valid") {
-          details = "Mailbox exists and is accepting mail."
-        } else if (result.status === "invalid") {
-          details = result.dns_valid ? "Mailbox does not exist." : "Domain does not accept mail."
-        } else if (result.status === "risky") {
-          if (result.disposable) {
-            details = "Disposable email address detected."
-          } else {
-            details = "This email may have a high bounce risk."
-          }
-        } else {
-          details = "Could not verify this email address."
-        }
-
-        return {
-          email: result.email,
-          status: result.status,
-          details,
-        }
-      })
-
-      allResults.push(...batchResults)
-      processed += batch.length
-
-      // Update progress after each batch
-      onProgress(processed, emails.length)
-    }
-
-    return allResults
-  } catch (error) {
-    console.error("[v0] Bulk verification error:", error)
-    throw error
-  }
 }
 
 export default function EmailVerificationTool() {
@@ -228,6 +197,8 @@ export default function EmailVerificationTool() {
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
 
   const [showBackToTop, setShowBackToTop] = useState(false)
+
+  const [originalFileData, setOriginalFileData] = useState<any[]>([])
 
   // Validate email format
   const validateEmail = (email: string): boolean => {
@@ -273,12 +244,14 @@ export default function EmailVerificationTool() {
     setBulkResults([])
 
     try {
-      const emails = await parseEmailsFromFile(file)
+      const { emails, rows } = await parseEmailsFromFile(file)
       setBulkEmails(emails)
+      setOriginalFileData(rows)
     } catch (error) {
       alert("Failed to parse file. Please try again.")
       setFile(null)
       setBulkEmails([])
+      setOriginalFileData([])
     }
   }
 
@@ -300,15 +273,14 @@ export default function EmailVerificationTool() {
     setIsDragging(false)
   }
 
-  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+  // Handle drop
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault()
-    e.stopPropagation()
     setIsDragging(false)
 
     const file = e.dataTransfer.files?.[0]
     if (!file) return
 
-    // Validate file type
     const validTypes = [
       "text/csv",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -324,12 +296,14 @@ export default function EmailVerificationTool() {
     setBulkResults([])
 
     try {
-      const emails = await parseEmailsFromFile(file)
+      const { emails, rows } = await parseEmailsFromFile(file)
       setBulkEmails(emails)
+      setOriginalFileData(rows)
     } catch (error) {
       alert("Failed to parse file. Please try again.")
       setFile(null)
       setBulkEmails([])
+      setOriginalFileData([])
     }
   }
 
@@ -339,18 +313,53 @@ export default function EmailVerificationTool() {
 
     setIsProcessing(true)
     setProgress(0)
+    setBulkResults([])
 
-    try {
-      const results = await verifyBulkEmails(bulkEmails, (current, total) => {
-        setProgress((current / total) * 100)
-      })
-      setBulkResults(results)
-      setStats(calculateStats(results))
-    } catch (error) {
-      alert("Verification failed. Please try again.")
-    } finally {
-      setIsProcessing(false)
+    const BATCH_SIZE = 50
+    const allResults: BulkResult[] = []
+
+    for (let i = 0; i < bulkEmails.length; i += BATCH_SIZE) {
+      const batch = bulkEmails.slice(i, i + BATCH_SIZE)
+
+      try {
+        const response = await fetch("/api/verify-bulk", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ emails: batch }),
+        })
+
+        if (!response.ok) throw new Error("Verification failed")
+
+        const batchResults = await response.json()
+
+        // Match results with original data
+        const enrichedResults = batchResults.map((result: any) => {
+          // Find the original row that contains this email
+          const originalRow = originalFileData.find((row) =>
+            Object.values(row).some(
+              (value) => typeof value === "string" && value.toLowerCase().includes(result.email.toLowerCase()),
+            ),
+          )
+
+          return {
+            ...result,
+            originalData: originalRow || {},
+          }
+        })
+
+        allResults.push(...enrichedResults)
+        setBulkResults([...allResults])
+
+        const currentProgress = Math.round(((i + batch.length) / bulkEmails.length) * 100)
+        setProgress(currentProgress)
+      } catch (error) {
+        console.error("Batch verification error:", error)
+      }
     }
+
+    setStats(calculateStats(allResults))
+    setIsProcessing(false)
+    setProgress(100)
   }
 
   // Calculate statistics
@@ -371,7 +380,30 @@ export default function EmailVerificationTool() {
 
     const resultsToExport = statusFilter ? bulkResults.filter((r) => r.status === statusFilter) : bulkResults
 
-    const csvContent = [["Email", "Status", "Details"], ...resultsToExport.map((r) => [r.email, r.status, r.details])]
+    // Get all unique column names from original data
+    const allColumns = new Set<string>()
+    resultsToExport.forEach((result) => {
+      if (result.originalData) {
+        Object.keys(result.originalData).forEach((key) => allColumns.add(key))
+      }
+    })
+
+    const originalColumns = Array.from(allColumns)
+    const headers = [...originalColumns, "Status", "Details"]
+
+    const csvContent = [
+      headers,
+      ...resultsToExport.map((r) => {
+        const originalValues = originalColumns.map((col) => {
+          const value = r.originalData?.[col] || ""
+          // Escape commas and quotes in CSV
+          return typeof value === "string" && (value.includes(",") || value.includes('"'))
+            ? `"${value.replace(/"/g, '""')}"`
+            : value
+        })
+        return [...originalValues, r.status, r.details]
+      }),
+    ]
       .map((row) => row.join(","))
       .join("\n")
 
@@ -392,6 +424,7 @@ export default function EmailVerificationTool() {
     setFile(null)
     setBulkEmails([])
     setStatusFilter(null)
+    setOriginalFileData([])
   }
 
   const scrollToTop = () => {
@@ -758,7 +791,15 @@ export default function EmailVerificationTool() {
                     <table className="w-full text-left text-sm">
                       <thead className="bg-slate-50 text-xs uppercase text-slate-700">
                         <tr>
-                          <th className="px-4 py-3">Email</th>
+                          {/* Show original columns first */}
+                          {bulkResults.length > 0 &&
+                            bulkResults[0].originalData &&
+                            Object.keys(bulkResults[0].originalData).map((column) => (
+                              <th key={column} className="px-4 py-3">
+                                {column}
+                              </th>
+                            ))}
+                          {/* Then verification columns */}
                           <th className="px-4 py-3">Status</th>
                           <th className="px-4 py-3">Details</th>
                         </tr>
@@ -767,7 +808,14 @@ export default function EmailVerificationTool() {
                         {(statusFilter ? bulkResults.filter((r) => r.status === statusFilter) : bulkResults).map(
                           (result, index) => (
                             <tr key={index}>
-                              <td className="px-4 py-3 font-medium text-slate-900">{result.email}</td>
+                              {/* Show original data first */}
+                              {result.originalData &&
+                                Object.values(result.originalData).map((value, i) => (
+                                  <td key={i} className="px-4 py-3 text-slate-900">
+                                    {String(value)}
+                                  </td>
+                                ))}
+                              {/* Then verification status */}
                               <td className="px-4 py-3">
                                 {result.status === "valid" && (
                                   <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
