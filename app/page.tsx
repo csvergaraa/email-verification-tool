@@ -338,8 +338,14 @@ export default function EmailVerificationTool() {
 
         if (!response.ok) throw new Error("Verification failed")
 
-        const batchResults = await response.json()
-        console.log("[v0] Batch results received:", batchResults.length)
+        const data = await response.json()
+        const batchResults = data.results
+        console.log("[v0] Batch results received:", batchResults?.length || 0)
+
+        if (!batchResults || !Array.isArray(batchResults)) {
+          console.error("[v0] Invalid batch results format:", data)
+          continue
+        }
 
         // Match results with original data
         const enrichedResults = batchResults.map((result: any) => {
