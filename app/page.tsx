@@ -309,7 +309,14 @@ export default function EmailVerificationTool() {
 
   // Handle bulk verification
   const handleBulkVerify = async () => {
-    if (bulkEmails.length === 0) return
+    console.log("[v0] handleBulkVerify called")
+    console.log("[v0] bulkEmails.length:", bulkEmails.length)
+    console.log("[v0] file:", file)
+
+    if (bulkEmails.length === 0) {
+      console.log("[v0] No emails to verify, returning early")
+      return
+    }
 
     setIsProcessing(true)
     setProgress(0)
@@ -320,6 +327,7 @@ export default function EmailVerificationTool() {
 
     for (let i = 0; i < bulkEmails.length; i += BATCH_SIZE) {
       const batch = bulkEmails.slice(i, i + BATCH_SIZE)
+      console.log("[v0] Processing batch", i / BATCH_SIZE + 1, "with", batch.length, "emails")
 
       try {
         const response = await fetch("/api/verify-bulk", {
@@ -331,6 +339,7 @@ export default function EmailVerificationTool() {
         if (!response.ok) throw new Error("Verification failed")
 
         const batchResults = await response.json()
+        console.log("[v0] Batch results received:", batchResults.length)
 
         // Match results with original data
         const enrichedResults = batchResults.map((result: any) => {
@@ -353,10 +362,11 @@ export default function EmailVerificationTool() {
         const currentProgress = Math.round(((i + batch.length) / bulkEmails.length) * 100)
         setProgress(currentProgress)
       } catch (error) {
-        console.error("Batch verification error:", error)
+        console.error("[v0] Batch verification error:", error)
       }
     }
 
+    console.log("[v0] All batches completed. Total results:", allResults.length)
     setStats(calculateStats(allResults))
     setIsProcessing(false)
     setProgress(100)
